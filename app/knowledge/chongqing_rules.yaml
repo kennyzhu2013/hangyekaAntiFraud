@@ -1,0 +1,508 @@
+# 重庆行业卡质检规则库（依据《重庆行业卡质检复核规范V1.1_20260518》）
+#
+# 规则 DSL 说明：
+#   match.all  : 全部子句须在 window 个轮次窗口内同时满足（AND）
+#   match.any  : 至少一个子句满足（OR）
+#   match.none : 任一子句满足则规则不命中（例外条件，NOT）
+#   子句结构   : {speaker: agent|customer（可省）, any_pattern: [正则列表]}
+#   window     : 滑动窗口轮次数；0 或省略表示整通通话
+#   priority   : 同风险等级下的合并优先级；风险等级排序优先于 priority
+#   fraud_flag : 涉诈类规则，命中即候选涉诈（风险等级固定高风险）
+#
+# 维护纪律：每条规则合入必须随附正反测试用例（tests/fixtures/cases.json）。
+
+# ===================== 引流第三方平台 =====================
+
+- rule_id: CQ-DIVERT-NONPERSONAL-001
+  category: 引流第三方平台
+  subtype: 引流非个人微信渠道（群/APP/链接/二维码/服务号等）
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 78
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '下载[^。，]{0,8}(APP|app|App|软件)'
+          - '点击[^。，]{0,6}链接'
+          - '扫[^。，]{0,4}二维码'
+          - '(关注|搜索|添加)[^。，]{0,10}服务号'
+          - '(微信群|QQ群|qq群|福利群|粉丝群|拉你?进群|加入?群聊|进我们的?群)'
+          - '(屏幕共享|共享屏幕|会议软件)'
+          - '发送[^。，]{0,6}领取服务'
+          - '置顶服务'
+          - '取消[^。，]{0,6}免打扰'
+  decision_notes: 凡引导至群聊/下载APP/点链接/扫码/关注公众号服务号/屏幕共享等非个人微信渠道，不区分场景均为高风险违规。
+
+- rule_id: CQ-DIVERT-WECHAT-USER-INITIATED
+  category: 引流第三方平台
+  subtype: 引导用户主动添加微信
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 80
+  window: 10
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '你?(打开|点开)[^。，]{0,4}微信'
+          - '点击?[^。，]{0,8}(加号|添加朋友)'
+      - speaker: agent
+        any_pattern:
+          - '添加到通讯录'
+          - '搜索框'
+          - '(报|输入|搜索)[^。，]{0,8}(号码|手机号)'
+          - '添加[^。，]{0,10}(微信|企业微信|经理|老师|客服)'
+    none:
+      - speaker: agent
+        any_pattern:
+          - '(我|我们)(这边|待会儿?|等下|一会儿?|先|马上|主动|来|去){0,3}加(一?个|一?下)?(您|你)'
+  decision_notes: 引导用户主动操作添加微信（含外呼人员本机号与第三方微信），不区分场景均为高风险。
+
+- rule_id: CQ-DIVERT-WECHAT-AGENT-INITIATED
+  category: 引流第三方平台
+  subtype: 外呼人员主动添加用户微信
+  risk_level: 合规
+  fraud_flag: false
+  priority: 10
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '(我|我们)(这边|待会儿?|等下|一会儿?|先|马上|主动|来|去){0,3}加(一?个|一?下)?(您|你)'
+  decision_notes: 外呼人员第一人称主动添加用户微信，不区分场景为合规。
+
+- rule_id: CQ-DIVERT-WECHAT-THIRDPARTY-LOAN
+  category: 引流第三方平台
+  subtype: 第三方添加用户微信（贷款场景）
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 42
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(经理|专员|老师|客服|法务|他|她)[^。，]{0,10}加(一?个|一?下)?(您|你)'
+          - '(让|安排)[^。，]{0,10}加(您|你)'
+      - speaker: agent
+        any_pattern:
+          - '(贷款|下款|放款|借款|额度|资金|网贷)'
+  decision_notes: 由第三方（经理/专员等）添加用户微信，贷款场景为低风险。
+
+- rule_id: CQ-DIVERT-WECHAT-THIRDPARTY-OTHER
+  category: 引流第三方平台
+  subtype: 第三方添加用户微信（非贷款场景）
+  risk_level: 合规
+  fraud_flag: false
+  priority: 10
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(经理|专员|老师|客服|法务|他|她)[^。，]{0,10}加(一?个|一?下)?(您|你)'
+          - '(让|安排)[^。，]{0,10}加(您|你)'
+    none:
+      - speaker: agent
+        any_pattern:
+          - '(贷款|下款|放款|借款|额度|资金|网贷)'
+  decision_notes: 第三方添加用户微信，非贷款场景为合规。
+
+# ===================== 贷款相关 =====================
+
+- rule_id: CQ-LOAN-DEBT-OPT-001
+  category: 贷款相关
+  subtype: 贷款债务优化
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 76
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '(处理|协商|优化)[^。]{0,12}(高利息|高息)[^。]{0,8}(平台|债务)'
+          - '债务优化'
+          - '协商还本'
+          - '(借|用)低息[^。]{0,10}还高息'
+          - '贷款替换'
+          - '爆通讯录'
+  decision_notes: 帮处理高利息平台债务、贷款置换（借低息还高息）等债务优化为高风险。
+
+- rule_id: CQ-LOAN-KTX-001
+  category: 贷款相关
+  subtype: 砍头息贷款
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 77
+  window: 0
+  match:
+    any:
+      - any_pattern:
+          - '砍头息'
+          - '[一1壹]万[^。]{0,12}[八8]千'
+          - '提前[^。，]{0,4}先?[扣收][^。]{0,10}(利息|息)'
+  decision_notes: 如贷款1万到手8千、提前扣息等，为高风险。
+
+- rule_id: CQ-LOAN-ABLOAN-001
+  category: 贷款相关
+  subtype: AB贷
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 77
+  window: 0
+  match:
+    any:
+      - any_pattern:
+          - '受托支付'
+          - '委托支付'
+          - '第三方代收'
+          - '第三方[^。，]{0,6}到场'
+          - '(找|让)[^。，]{0,8}(帮你|代)收款'
+  decision_notes: 受托支付、委托支付、第三方代收/到场背调等为AB贷特征，高风险。
+
+- rule_id: CQ-LOAN-OVERPROMISE-001
+  category: 贷款相关
+  subtype: 过分承诺
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 35
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '包过'
+          - '包批'
+          - '包下款'
+          - '(百分之百|100%)[^。，]{0,6}下款'
+          - '内部渠道'
+          - '零利息'
+          - '(保证金|解冻金)'
+    none:
+      - speaker: agent
+        any_pattern:
+          - '不(会|得|要|能)?[^。，]{0,6}收(取)?[^。，]{0,10}(保证金|押金|任何费用)'
+  decision_notes: 包过/包批/100%下款/内部渠道/保证金/解冻金/零利息为低风险；注意排除"不收取保证金"类合规免责话术（none 为整窗口排除，存在与真实承诺共现时漏报的可能，由 LLM 复核）。
+
+- rule_id: CQ-LOAN-PREFEE-001
+  category: 贷款相关
+  subtype: 提前收取费用
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 36
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(交|收|缴)[^。，]{0,6}定金'
+          - '(前期|提前)[^。，]{0,10}(费用|收费|交费)'
+          - '(场地费|资料费|流水费|考察费|基础费用)'
+      - speaker: agent
+        any_pattern:
+          - '(贷款|下款|额度|资金|授信|产品|执照)'
+  decision_notes: 贷款场景提前收取定金/场地费/流水费等为低风险。
+
+- rule_id: CQ-LOAN-NETLOAN-001
+  category: 贷款相关
+  subtype: 网贷、小贷平台
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 34
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(度小满|安逸花|拍拍贷|分期乐|理想花|花呗|借呗|微粒贷|白条|网贷|小贷)'
+      - speaker: agent
+        any_pattern:
+          - '(贷款|借款|下款|放款|额度|申请|资金)'
+  decision_notes: 度小满/安逸花/拍拍贷/分期乐等网贷小贷平台推销为低风险。
+
+- rule_id: CQ-LOAN-NOCREDIT-001
+  category: 贷款相关
+  subtype: 不看征信
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 33
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '不(看|查)[^。，]{0,6}征信'
+  decision_notes: 贷款推销宣称不看征信为低风险。
+
+- rule_id: CQ-LOAN-COMPLIANT-001
+  category: 贷款相关
+  subtype: 合规平台
+  risk_level: 合规
+  fraud_flag: false
+  priority: 10
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '(银行|消费金融|融三六零|融360)[^。]{0,8}(贷款|借款|放款)'
+  decision_notes: 银行、银行消费金融、融三六零等合规平台贷款为合规。
+
+# ===================== 法律服务 =====================
+
+- rule_id: CQ-LEGAL-FEE-001
+  category: 法律服务
+  subtype: 法律维权服务收费
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 38
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(法律|律师|法务|维权|起诉|律师函|事务所|调解)'
+      - speaker: agent
+        any_pattern:
+          - '(维权费|调档费|手续费|尾款|定金|对公账[号户])'
+          - '(支付|补齐)[^。，]{0,8}(一下|尾款|费用)'
+  decision_notes: 以法律机构维权名义收取费用（手续费/保证金/调档费/尾款至对公或个人账户）为低风险违规。
+
+# ===================== 企业营销与招商服务 =====================
+
+- rule_id: CQ-MKT-AIPROMO-001
+  category: 企业营销与招商服务
+  subtype: AI/小红书推广获客服务
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 32
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(获客|推广|排名|流量)'
+      - speaker: agent
+        any_pattern:
+          - '(豆包|deepseek|DeepSeek|小红书|[aA][iI]平台|[Gg][Ee][Oo]服务)'
+  decision_notes: 收费提供 AI/小红书推广获客（GEO）服务为低风险。
+
+# ===================== 商品推销 =====================
+
+- rule_id: CQ-RETAIL-POS-001
+  category: 商品推销
+  subtype: 赠送POS机刷流水
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 31
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(刷卡机|[pP][oO][sS]机|收款码)'
+      - speaker: agent
+        any_pattern:
+          - '(邮费|保证金|垫付)'
+          - '激活[^。]{0,15}退'
+  decision_notes: 赠送POS机需先垫付邮费/保证金、激活后返还等为低风险；仅收几十元运费为合规。
+
+- rule_id: CQ-RETAIL-HEALTH-001
+  category: 商品推销
+  subtype: 保健品推销
+  risk_level: 中风险
+  fraud_flag: false
+  priority: 55
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(保健品|灵芝|原浆|调节免疫|降血糖|降血脂|抗衰老)'
+      - speaker: agent
+        any_pattern:
+          - '(添加微信|加微信|会员|免费领|领取|包邮)'
+  decision_notes: 免费领引流+加微信推销高价保健品（针对老年群体）为中风险。
+
+# ===================== 商业地产 =====================
+
+- rule_id: CQ-ESTATE-RENTOP-001
+  category: 商业地产
+  subtype: 代客运营租房装修收费
+  risk_level: 中风险
+  fraud_flag: false
+  priority: 54
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(出租|租房|代运营|长期合同|长期合作)'
+      - speaker: agent
+        any_pattern:
+          - '软装[^。]{0,20}(统一配置|配置|万|千)'
+          - '委托[^。，]{0,8}装修'
+  decision_notes: 长期合作代运营租房、要求按指定风格付费装修为中风险。
+
+- rule_id: CQ-ESTATE-FAPAI-001
+  category: 商业地产
+  subtype: 法拍房处理
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 30
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '法拍房?'
+          - '(房子?|房产)[^。]{0,10}拍卖'
+          - '(一拍|二拍|流拍)'
+          - '代持人'
+          - '唯一住房补贴'
+  decision_notes: 用户欠债房产被拍卖、代处理法拍房问题为低风险。
+
+# ===================== 违规催收 =====================
+
+- rule_id: CQ-COLLECT-THIRD-001
+  category: 违规催收
+  subtype: 通讯录/暴力催收
+  risk_level: 低风险
+  fraud_flag: false
+  priority: 39
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(逾期|欠款?|贷款|借钱|账单|没给人家还|还款)'
+      - speaker: agent
+        any_pattern:
+          - '(家人|家属|转告)'
+          - '(爆|打|联系|轰炸)[^。，]{0,6}通讯录'
+          - '通讯录催收'
+          - '(户籍地?|上门)[^。]{0,10}(老家|核实|催收|走访)'
+          - '上门'
+    none:
+      - speaker: agent
+        any_pattern:
+          - '不会?[^。，]{0,4}爆通讯录'
+  decision_notes: 向欠款人亲友/同事催收、威胁上门、报身份证住址威胁等为低风险违规；对本人催收为合规；排除"不会爆通讯录"类免责话术（该话术属债务优化特征，由对应规则承接）。
+
+# ===================== 其他 =====================
+
+- rule_id: CQ-OTHER-SENSITIVE-001
+  category: 其他
+  subtype: 询问或确认个人敏感信息
+  risk_level: 高风险
+  fraud_flag: false
+  priority: 79
+  window: 0
+  match:
+    any:
+      - speaker: agent
+        any_pattern:
+          - '(报|说|核对|提供|确认)[^。，]{0,8}身份证'
+          - '身份证号码?'
+          - '家庭住址'
+          - '户籍地[^。]{0,8}(信息|有没有|是否|变更)'
+  decision_notes: 要求报身份证号、家庭住址等个人敏感信息为高风险。
+
+# ===================== 涉诈识别（fraud_flag=true，一律高风险） =====================
+
+- rule_id: CQ-FRAUD-FLIGHT-001
+  category: 机票退改签诈骗
+  subtype: 冒充航司客服退改签理赔
+  risk_level: 高风险
+  fraud_flag: true
+  priority: 95
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(航空|航班|机票)'
+      - speaker: agent
+        any_pattern:
+          - '(取消|延误|故障|管控|退票|改签)'
+      - speaker: agent
+        any_pattern:
+          - '(赔付|理赔|赔偿|现金赔|三百元)'
+  decision_notes: 冒充航司称航班故障/取消，办理退改签并发放赔付金，再引导支付宝操作/屏幕共享/转账，一定是诈骗。
+
+- rule_id: CQ-FRAUD-PHONE-RENT-001
+  category: 手机租赁套路贷诈骗
+  subtype: 租机变现资金周转/租机贷催收
+  risk_level: 高风险
+  fraud_flag: true
+  priority: 95
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(租赁|租手机|租机|租物|分期[^。，]{0,4}手机)'
+      - speaker: agent
+        any_pattern:
+          - '(周转|回收|买断|变现|套现|打款|资金)'
+  decision_notes: 以租赁手机/商品下单形式做资金周转（含其催收）均为诈骗。
+
+- rule_id: CQ-FRAUD-STOCK-001
+  category: 证券投资类
+  subtype: 引流投资理财群/投顾服务
+  risk_level: 高风险
+  fraud_flag: true
+  priority: 95
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(炒股|股票|证券|投顾|股市|标的|理财|基金|外汇)'
+      - speaker: agent
+        any_pattern:
+          - '(服务号|进群|入群|核心群|老师|会费|佣金|托管)'
+  decision_notes: 凡加炒股群、证券投资、理财（黄金/基金/股票/外汇/彩票）引流均为诈骗。
+
+- rule_id: CQ-FRAUD-REFUND-001
+  category: 网贷平台退息退费
+  subtype: 法律维权名义退息退费
+  risk_level: 高风险
+  fraud_flag: true
+  priority: 95
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(退息|退费)'
+          - '退[^。，]{0,8}(利息|会员费)'
+          - '(利息|会员费)[^。]{0,12}(退回|申请退)'
+      - speaker: agent
+        any_pattern:
+          - '(网贷|贷款平台|平台)'
+  decision_notes: 宣称协助办理网贷平台退息退费均为诈骗。
+
+- rule_id: CQ-FRAUD-ANNUAL-REPORT-001
+  category: 个体工商户年报补录收费
+  subtype: 冒充税务引导补录缴费
+  risk_level: 高风险
+  fraud_flag: true
+  priority: 95
+  window: 0
+  match:
+    all:
+      - speaker: agent
+        any_pattern:
+          - '(年报|税务申报|季度申报|工商)'
+      - speaker: agent
+        any_pattern:
+          - '补录'
+      - speaker: agent
+        any_pattern:
+          - '(费用|缴费|缴纳|交上去|补缴)'
+  decision_notes: 自称线上税务代办，引导小程序补录缴费均为诈骗（年报申报本身免费）。

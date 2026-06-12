@@ -1,0 +1,62 @@
+[
+  {
+    "category": "引流第三方平台",
+    "case": "外呼方自称安逸花客服，称人工审核不看大数据征信、最低两万起批，随后引导用户打开微信、点击加号、在搜索框输入号码、添加放款经理并发送姓名与额度。",
+    "output": {
+      "is_violation": true,
+      "is_fraud": false,
+      "violation_type": "引流第三方平台",
+      "risk_level": "高风险",
+      "summary": "引流第三方平台：安逸花平台贷款推销，引导添加放款经理微信",
+      "explanation": "外呼人员引导用户主动操作添加第三方（放款经理）微信，属引导用户主动添加微信，不区分场景为高风险；同时存在网贷平台推销与不看征信话术，按就高不就低取高风险。",
+      "evidence": ["您打开微信，点击最上方加号"],
+      "needs_human_review": true,
+      "confidence": 0.92
+    }
+  },
+  {
+    "category": "个体工商户年报补录收费",
+    "case": "外呼方自称线上税务服务中心，称店铺年报与季度申报未做、显示异常，引导添加企业微信并在小程序操作，称可能产生补录费用，让用户补录交上去。",
+    "output": {
+      "is_violation": true,
+      "is_fraud": true,
+      "violation_type": "个体工商户年报补录收费",
+      "risk_level": "高风险",
+      "summary": "个体工商户年报补录收费：自称线上税务服务中心，引导小程序补录缴费，涉诈",
+      "explanation": "年报申报本身免费，不存在补录费。通话冒充税务服务主体、虚构申报异常并引导缴纳补录费用，符合个体工商户年报补录收费诈骗套路，涉诈一律高风险。",
+      "evidence": ["有可能产生一笔补录费用", "你把它补录交上去"],
+      "needs_human_review": true,
+      "confidence": 0.95
+    }
+  },
+  {
+    "category": "证券投资类",
+    "case": "外呼方称用户购买过投顾产品，公司联合证券机构建内部核心群免费延长投顾服务，引导搜索服务号、发送领取服务、置顶并取消免打扰，后续收取会费。",
+    "output": {
+      "is_violation": true,
+      "is_fraud": true,
+      "violation_type": "证券投资类",
+      "risk_level": "高风险",
+      "summary": "证券投资类：以投顾服务名义引导关注服务号进群，后续收取会费，涉诈",
+      "explanation": "以官方福利群/投顾服务名义引导添加服务号并置顶、取消免打扰，配合会费佣金合作模式，符合证券投资类诈骗套路；凡证券投资理财引流均为诈骗，高风险。",
+      "evidence": ["搜索服务号", "发送领取服务"],
+      "needs_human_review": true,
+      "confidence": 0.94
+    }
+  },
+  {
+    "category": "正常",
+    "case": "快递员与用户确认收货地址与放置位置，无任何引流、收费、贷款、投资内容。",
+    "output": {
+      "is_violation": false,
+      "is_fraud": false,
+      "violation_type": null,
+      "risk_level": "正常",
+      "summary": "正常：快递配送沟通，未发现违规行为",
+      "explanation": "通话内容为快递投放确认，不涉及引流第三方平台、贷款、收费、投资理财等违规或涉诈场景。",
+      "evidence": [],
+      "needs_human_review": false,
+      "confidence": 0.97
+    }
+  }
+]

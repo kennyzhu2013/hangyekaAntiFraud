@@ -1,0 +1,200 @@
+[
+  {
+    "name": "user_initiated_wechat_high_risk",
+    "transcript": "left:您好，我是安逸花的人工客服，您之前有一笔贷款申请，人工审核不看大数据征信，最低两万起批。right:利息多少？left:一万每个月四十块钱利息。麻烦您添加一下我们下款经理的微信，您打开微信，点击最上方加号，点那个添加朋友，在搜索框输入幺零九八，然后点添加到通讯录。right:好的，加好了。",
+    "expect_rules": ["CQ-DIVERT-WECHAT-USER-INITIATED", "CQ-LOAN-NOCREDIT-001", "CQ-LOAN-NETLOAN-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "引流第三方平台",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "agent_initiated_wechat_compliant",
+    "transcript": "left:您好，我是融三六零的客户经理，关于您咨询的银行贷款产品，我这边先加您微信，把产品资料发给您看一下。right:可以。",
+    "expect_rules": ["CQ-DIVERT-WECHAT-AGENT-INITIATED", "CQ-LOAN-COMPLIANT-001"],
+    "expect_not_rules": ["CQ-DIVERT-WECHAT-USER-INITIATED"],
+    "expect_candidate_category": null,
+    "expect_candidate_risk": "正常",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "thirdparty_wechat_non_loan_compliant",
+    "transcript": "left:您好，我是酒厂的，您上周在直播间买的酱香白酒收到了吧？给您额外赠送一瓶年份更高的老酒。这手机号能加到您的微信吗？我们酒厂的经理甜甜，他待会儿加一个您的微信，把赠品信息发给您。right:可以可以。",
+    "expect_rules": ["CQ-DIVERT-WECHAT-THIRDPARTY-OTHER"],
+    "expect_not_rules": ["CQ-DIVERT-WECHAT-THIRDPARTY-LOAN", "CQ-DIVERT-WECHAT-USER-INITIATED"],
+    "expect_candidate_category": null,
+    "expect_candidate_risk": "正常",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "service_account_divert_high_risk",
+    "transcript": "left:您点开微信，右上角添加好友下面有一个服务号，搜索玉化信息，添加之后发送领取服务，然后点击置顶服务，再取消消息免打扰。right:好了。",
+    "expect_rules": ["CQ-DIVERT-NONPERSONAL-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "引流第三方平台",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "annual_report_fraud",
+    "transcript": "left:喂，你好，我是线上税务服务中心的，看到您的羊肉店年报没有申报，季度税务申报也没做，系统显示异常。你打开微信点击加号，添加企业微信幺五三幺，我教你在小程序操作。你这个二四年二五年没有按时申报，有可能产生一笔补录费用，有费用的话你把它补录交上去，这边帮你处理恢复正常。right:好的。",
+    "expect_rules": ["CQ-FRAUD-ANNUAL-REPORT-001", "CQ-DIVERT-WECHAT-USER-INITIATED"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "个体工商户年报补录收费",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": true
+  },
+  {
+    "name": "stock_fraud",
+    "transcript": "left:您好，我是华泰投的客服，您之前购买过我们的投顾产品，现在公司联合上海证券创建了内部核心群，免费延长半年投顾服务，老师每天盘前给您选一到两只优质标的，后续按会费形式合作。您打开微信搜索服务号，发送领取服务就可以。right:好。",
+    "expect_rules": ["CQ-FRAUD-STOCK-001", "CQ-DIVERT-NONPERSONAL-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "证券投资类",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": true
+  },
+  {
+    "name": "kantouxi_high_risk",
+    "transcript": "left:你之前不是借了一笔嘛，我们这边一万到时候到手八千左右，每天还五百五的本金，提前先给你扣利息，七天过后提前还只还本金。right:利息太高了嘛。",
+    "expect_rules": ["CQ-LOAN-KTX-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "贷款相关",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "ab_loan_high_risk",
+    "transcript": "left:现在可以走受托支付，你提交一个受托支付人的账户，半天时间就可以搞定，受托支付本来就是银行认可的方式。right:哦。",
+    "expect_rules": ["CQ-LOAN-ABLOAN-001"],
+    "expect_not_rules": ["CQ-LOAN-COMPLIANT-001"],
+    "expect_candidate_category": "贷款相关",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "debt_optimization_high_risk",
+    "transcript": "left:您好，我们了解到您近期在使用短期高利息平台，像微粒贷借条之类的。我们是专业处理短期高利息平台债务的，可以协商还本，减轻您的还款压力，也不会被爆通讯录，先处理再收费。right:嗯。",
+    "expect_rules": ["CQ-LOAN-DEBT-OPT-001"],
+    "expect_not_rules": ["CQ-COLLECT-THIRD-001"],
+    "expect_candidate_category": "贷款相关",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "refund_fraud",
+    "transcript": "left:你好，我们这边是办理网贷平台退息退费的，超过国家规定百分之二十四以上的高利息可以给您申请退回来，我让法务老师添加您微信，帮您梳理平台。right:好。",
+    "expect_rules": ["CQ-FRAUD-REFUND-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "网贷平台退息退费",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": true
+  },
+  {
+    "name": "phone_rent_fraud",
+    "transcript": "left:您要资金周转的话，可以在芝麻租赁上帮您分期一个手机，平台商家直接回收，您只拿到钱拿不到手机，先给您打款，后续每个月支付租赁费用就行。right:可以。",
+    "expect_rules": ["CQ-FRAUD-PHONE-RENT-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "手机租赁套路贷诈骗",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": true
+  },
+  {
+    "name": "flight_refund_fraud",
+    "transcript": "left:您好，这边是南方航空，您明天上午的航班由于机场临时管控取消了，请问您需要办理改签还是退票呢？我们航空公司对每位乘客有三百元的现金赔付，您打开支付宝，我协助您快速领取。right:帮我退票吧。",
+    "expect_rules": ["CQ-FRAUD-FLIGHT-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "机票退改签诈骗",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": true
+  },
+  {
+    "name": "prefee_loan_low_risk",
+    "transcript": "left:我们是做个体商户贷的，您名下执照满一年就可以授信三十到一百万。right:前期有费用没有？left:肯定要交点定金，过了平板我们才收基础费用，场地费基本上一千八到两千。right:定金交好多？",
+    "expect_rules": ["CQ-LOAN-PREFEE-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "贷款相关",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "collect_third_party_low_risk",
+    "transcript": "left:您好，是李先生的家人对吧？李先生在京东借钱上申请了贷款，截止目前一直没给人家还，您这边转告给他，抓紧时间处理。后续可能委托当地工作人员去他户籍地老家进行核实。right:我知道了。",
+    "expect_rules": ["CQ-COLLECT-THIRD-001"],
+    "expect_not_rules": ["CQ-OTHER-SENSITIVE-001"],
+    "expect_candidate_category": "违规催收",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "sensitive_info_high_risk",
+    "transcript": "left:跟您核实一下您办理业务预留的几个信息，您当时填写的户籍地信息是否有变更？另外您报一下身份证号码我登记一下。right:为什么要报这个？",
+    "expect_rules": ["CQ-OTHER-SENSITIVE-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "其他",
+    "expect_candidate_risk": "高风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "normal_call",
+    "transcript": "left:您好，您的快递到了，放在小区驿站可以吗？right:可以的，麻烦放驿站，谢谢。left:好的，祝您生活愉快。",
+    "expect_rules": [],
+    "expect_not_rules": [],
+    "expect_candidate_category": null,
+    "expect_candidate_risk": "正常",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "overpromise_disclaimer_not_hit",
+    "transcript": "left:我们人工办理都是免费的，不会收取您的押金和保证金之类的费用，后面有问题直接跟经理沟通就可以。right:好。",
+    "expect_rules": [],
+    "expect_not_rules": ["CQ-LOAN-OVERPROMISE-001"],
+    "expect_candidate_category": null,
+    "expect_candidate_risk": "正常",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "health_product_medium_risk",
+    "transcript": "left:长辈您好，新的一年我们公司推出福利活动，只要添加微信成为会员，就可以免费领取一大盒价值二百八十八元的灵芝原浆，灵芝调节免疫降血糖，对身体非常好，包邮送到家。right:好嘛。",
+    "expect_rules": ["CQ-RETAIL-HEALTH-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "商品推销",
+    "expect_candidate_risk": "中风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "legal_fee_low_risk",
+    "transcript": "left:对方查看了法律函件还是没有主动联系您，说明他没有还款意愿，咱们就直接走起诉流程。您把剩余五百的尾款补齐一下，我把事务所的对公账号发给您，您支付一下，支付之后截图发我，这边给您转接起诉流程。right:好的。",
+    "expect_rules": ["CQ-LEGAL-FEE-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "法律服务",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "pos_machine_low_risk",
+    "transcript": "left:老师您还在用刷卡机没得嘛，我们免费赠送华为同款智能手表，区县的话需要邮寄，邮费五十九块钱您先垫付，收到新刷卡机激活了过后，我们会把邮费退给您。right:要得。",
+    "expect_rules": ["CQ-RETAIL-POS-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "商品推销",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "ai_promo_low_risk",
+    "transcript": "left:我这边是做获客的，把您公司的产品排到豆包、DeepSeek这些平台上面做排名，给您带来咨询和流量，按一年半年方式合作，平均每个月一千块钱。right:哦。",
+    "expect_rules": ["CQ-MKT-AIPROMO-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "企业营销与招商服务",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  },
+  {
+    "name": "fapai_house_low_risk",
+    "transcript": "left:您农村那套房子二十四天后就要开拍了，我们专门做法拍房处理，可以帮您把房子保住，还可以找代持人在二拍时按只能抵债的价格拍回来，再帮您申请唯一住房补贴金。right:哦。",
+    "expect_rules": ["CQ-ESTATE-FAPAI-001"],
+    "expect_not_rules": [],
+    "expect_candidate_category": "商业地产",
+    "expect_candidate_risk": "低风险",
+    "expect_fraud_candidate": false
+  }
+]
